@@ -116,6 +116,7 @@ set(sources
   online-transducer-greedy-search-decoder.cc
   online-transducer-greedy-search-nemo-parakeet-unified-decoder.cc
   online-transducer-greedy-search-nemo-decoder.cc
+  online-transducer-modified-beam-search-nemo-decoder.cc
   online-transducer-model-config.cc
   online-transducer-model.cc
   online-transducer-modified-beam-search-decoder.cc

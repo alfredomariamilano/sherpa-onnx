@@ -6,6 +6,10 @@ target_link_libraries(streaming-zipformer-cxx-api sherpa-onnx-cxx-api)
 add_executable(streaming-nemotron-cxx-api ./streaming-nemotron-cxx-api.cc)
 target_link_libraries(streaming-nemotron-cxx-api sherpa-onnx-cxx-api)
 
+add_executable(test-nemotron-hotwords-cxx-api
+               ./test-nemotron-hotwords-cxx-api.cc)
+target_link_libraries(test-nemotron-hotwords-cxx-api sherpa-onnx-cxx-api)
+
 add_executable(streaming-zipformer-with-hr-cxx-api ./streaming-zipformer-with-hr-cxx-api.cc)
 target_link_libraries(streaming-zipformer-with-hr-cxx-api sherpa-onnx-cxx-api)
 

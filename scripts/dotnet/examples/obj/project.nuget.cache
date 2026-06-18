@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "dgSpecHash": "6JHND+QFXDk=",
+  "success": false,
+  "projectFilePath": "/home/alfredo/development/forks/sherpa-onnx/scripts/dotnet/examples/Common.csproj",
+  "expectedPackageFiles": [
+    "/home/alfredo/.nuget/packages/microsoft.netcore.app.ref/8.0.25/microsoft.netcore.app.ref.8.0.25.nupkg.sha512",
+    "/home/alfredo/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.25/microsoft.aspnetcore.app.ref.8.0.25.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "The local source '/tmp/packages' doesn't exist.",
+      "projectPath": "/home/alfredo/development/forks/sherpa-onnx/scripts/dotnet/examples/Common.csproj",
+      "filePath": "/home/alfredo/development/forks/sherpa-onnx/scripts/dotnet/examples/Common.csproj",
+      "libraryId": "org.k2fsa.sherpa.onnx",
+      "targetGraphs": []
+    }
+  ]
+}

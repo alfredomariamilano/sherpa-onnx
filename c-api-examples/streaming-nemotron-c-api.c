@@ -7,9 +7,11 @@
 // API.
 // clang-format off
 //
-// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
-// tar xvf sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
-// rm sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/encoder.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/decoder.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/joiner.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/tokens.txt
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/test_wavs/en.wav
 //
 // clang-format on
 
@@ -19,21 +21,21 @@
 
 #include "sherpa-onnx/c-api/c-api.h"
 
-int32_t main() {
+int32_t main(int32_t argc, char *argv[]) {
   const char *wav_filename =
-      "sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
-      "test_wavs/0.wav";
+      "sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
+      "test_wavs/en.wav";
   const char *encoder_filename =
-      "sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "encoder.int8.onnx";
   const char *decoder_filename =
-      "sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "decoder.int8.onnx";
   const char *joiner_filename =
-      "sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "joiner.int8.onnx";
   const char *tokens_filename =
-      "sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "tokens.txt";
   const char *provider = "cpu";
 
@@ -43,10 +45,24 @@ int32_t main() {
     return -1;
   }
 
+  // Optional hotwords file. Pass it as the first command-line argument, e.g.
+  // ./streaming-nemotron-c-api hotwords.txt [bpe_vocab]
+  const char *hotwords_file = "";
+  const char *bpe_vocab = "";
+  if (argc >= 2) {
+    hotwords_file = argv[1];
+  }
+  if (argc >= 3) {
+    bpe_vocab = argv[2];
+  }
+
   // Recognizer config
   SherpaOnnxOnlineRecognizerConfig recognizer_config;
   memset(&recognizer_config, 0, sizeof(recognizer_config));
-  recognizer_config.decoding_method = "greedy_search";
+  recognizer_config.decoding_method = "modified_beam_search";
+  recognizer_config.max_active_paths = 4;
+  recognizer_config.hotwords_file = hotwords_file;
+  recognizer_config.hotwords_score = 1.5f;
   recognizer_config.model_config.debug = 1;
   recognizer_config.model_config.num_threads = 1;
   recognizer_config.model_config.provider = provider;
@@ -54,7 +70,19 @@ int32_t main() {
   recognizer_config.model_config.transducer.encoder = encoder_filename;
   recognizer_config.model_config.transducer.decoder = decoder_filename;
   recognizer_config.model_config.transducer.joiner = joiner_filename;
+  if (strlen(bpe_vocab)) {
+    recognizer_config.model_config.modeling_unit = "bpe";
+    recognizer_config.model_config.bpe_vocab = bpe_vocab;
+  }
   recognizer_config.enable_endpoint = 1;
+
+  fprintf(stderr, "decoding method: %s\n", recognizer_config.decoding_method);
+  fprintf(stderr, "max active paths: %d\n", recognizer_config.max_active_paths);
+  fprintf(stderr, "hotwords file: %s\n",
+          strlen(hotwords_file) ? hotwords_file : "(none)");
+  fprintf(stderr, "hotwords score: %.2f\n", recognizer_config.hotwords_score);
+  fprintf(stderr, "bpe vocab: %s\n",
+          strlen(bpe_vocab) ? bpe_vocab : "(none)");
 
   const SherpaOnnxOnlineRecognizer *recognizer =
       SherpaOnnxCreateOnlineRecognizer(&recognizer_config);

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "sherpa-onnx/csrc/features.h"
+#include "sherpa-onnx/csrc/online-transducer-modified-beam-search-nemo-decoder.h"
 #include "sherpa-onnx/csrc/text-utils.h"
 #include "sherpa-onnx/csrc/transducer-keyword-decoder.h"
 
@@ -129,6 +130,15 @@ class OnlineStream::Impl {
 
   std::vector<Ort::Value> &GetNeMoDecoderStates() { return decoder_states_; }
 
+  void SetNeMoBeamSearchState(
+      std::shared_ptr<OnlineTransducerNeMoBeamSearchState> state) {
+    nemo_beam_search_state_ = std::move(state);
+  }
+
+  std::shared_ptr<OnlineTransducerNeMoBeamSearchState> GetNeMoBeamSearchState() {
+    return nemo_beam_search_state_;
+  }
+
   const ContextGraphPtr &GetContextGraph() const { return context_graph_; }
 
   std::vector<float> &GetParaformerFeatCache() {
@@ -204,6 +214,7 @@ class OnlineStream::Impl {
   std::vector<Ort::Value> states_;  // states for transducer or ctc models
   std::vector<OnlineStreamStateTensor> qnn_states_;
   std::vector<Ort::Value> decoder_states_;  // states for nemo transducer models
+  std::shared_ptr<OnlineTransducerNeMoBeamSearchState> nemo_beam_search_state_;
   std::vector<float> paraformer_feat_cache_;
   std::vector<float> paraformer_encoder_out_cache_;
   std::vector<float> paraformer_alpha_cache_;
@@ -318,6 +329,16 @@ void OnlineStream::SetNeMoDecoderStates(
 
 std::vector<Ort::Value> &OnlineStream::GetNeMoDecoderStates() {
   return impl_->GetNeMoDecoderStates();
+}
+
+void OnlineStream::SetNeMoBeamSearchState(
+    std::shared_ptr<OnlineTransducerNeMoBeamSearchState> state) {
+  impl_->SetNeMoBeamSearchState(std::move(state));
+}
+
+std::shared_ptr<OnlineTransducerNeMoBeamSearchState>
+OnlineStream::GetNeMoBeamSearchState() {
+  return impl_->GetNeMoBeamSearchState();
 }
 
 const ContextGraphPtr &OnlineStream::GetContextGraph() const {

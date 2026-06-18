@@ -7,9 +7,11 @@
 //
 // clang-format off
 //
-// wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
-// tar xvf sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
-// rm sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25.tar.bz2
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/encoder.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/decoder.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/joiner.int8.onnx
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/tokens.txt
+// wget https://huggingface.co/csukuangfj2/sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/resolve/main/test_wavs/en.wav
 //
 // clang-format on
 
@@ -20,24 +22,36 @@
 
 #include "sherpa-onnx/c-api/cxx-api.h"
 
-int32_t main() {
+int32_t main(int32_t argc, char *argv[]) {
   using namespace sherpa_onnx::cxx;  // NOLINT
   OnlineRecognizerConfig config;
 
+  // Optional hotwords file. Pass it as the first argument, e.g.
+  // ./streaming-nemotron-cxx-api hotwords.txt
+  std::string hotwords_file;
+  if (argc >= 2) {
+    hotwords_file = argv[1];
+  }
+
+  config.decoding_method = "modified_beam_search";
+  config.max_active_paths = 4;
+  config.hotwords_file = hotwords_file;
+  config.hotwords_score = 1.5f;
+
   config.model_config.transducer.encoder =
-      "./sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "./sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "encoder.int8.onnx";
 
   config.model_config.transducer.decoder =
-      "./sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "./sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "decoder.int8.onnx";
 
   config.model_config.transducer.joiner =
-      "./sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "./sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "joiner.int8.onnx";
 
   config.model_config.tokens =
-      "./sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
+      "./sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
       "tokens.txt";
 
   config.model_config.num_threads = 1;
@@ -51,8 +65,8 @@ int32_t main() {
   std::cout << "Loading model done\n";
 
   std::string wave_filename =
-      "./sherpa-onnx-nemotron-speech-streaming-en-0.6b-560ms-int8-2026-04-25/"
-      "test_wavs/0.wav";
+      "./sherpa-onnx-nemotron-3.5-asr-streaming-0.6b-80ms-int8-2026-06-11/"
+      "test_wavs/en.wav";
   Wave wave = ReadWave(wave_filename);
   if (wave.samples.empty()) {
     std::cerr << "Failed to read: '" << wave_filename << "'\n";

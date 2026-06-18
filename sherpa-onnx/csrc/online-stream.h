@@ -20,6 +20,7 @@
 
 namespace sherpa_onnx {
 
+struct OnlineTransducerNeMoBeamSearchState;
 struct TransducerKeywordResult;
 class OnlineStream {
  public:
@@ -101,6 +102,10 @@ class OnlineStream {
 
   void SetNeMoDecoderStates(std::vector<Ort::Value> decoder_states);
   std::vector<Ort::Value> &GetNeMoDecoderStates();
+
+  void SetNeMoBeamSearchState(
+      std::shared_ptr<OnlineTransducerNeMoBeamSearchState> state);
+  std::shared_ptr<OnlineTransducerNeMoBeamSearchState> GetNeMoBeamSearchState();
 
   /**
    * Get the context graph corresponding to this stream.
